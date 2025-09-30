@@ -61,10 +61,7 @@ public class UserController {
             }return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error","Не удалось удалить пользователя"));
 
-        }catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        }catch (IllegalStateException e) {
+        }catch (NoSuchElementException | IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", e.getMessage()));
         }

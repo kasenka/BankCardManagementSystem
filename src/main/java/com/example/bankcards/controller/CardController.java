@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 import java.security.Principal;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/cards")
@@ -40,30 +41,54 @@ public class CardController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getMyCard(@PathVariable("id") Long id, Principal principal) {
-        return ResponseEntity.ok(cardService.getMyCard(principal.getName(), id));
+        try {
+            return ResponseEntity.ok(cardService.getMyCard(principal.getName(), id));
+        }catch (NoSuchElementException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     // Перевод между картами
     @PostMapping("/transaction")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> transfer(@RequestBody TransactionRequestDTO dto, Principal principal) {
-        cardService.transaction(principal.getName(), dto);
-        return ResponseEntity.ok(Map.of("message", "Перевод выполнен"));
+        try{
+            cardService.transaction(principal.getName(), dto);
+            return ResponseEntity.ok(Map.of("message", "Перевод выполнен"));
+
+        }catch (NoSuchElementException | IllegalStateException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
+
     }
 
     // Запрос на блокировку карты
     @PostMapping("/{id}/block-request")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> requestBlock(@PathVariable("id") Long id, Principal principal) {
-        cardService.requestBlock(principal.getName(), id);
-        return ResponseEntity.ok(Map.of("message", "Запрос на блокировку отправлен"));
+        try {
+            cardService.requestBlock(principal.getName(), id);
+            return ResponseEntity.ok(Map.of("message", "Запрос на блокировку отправлен"));
+
+        }catch (IllegalStateException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     // Баланс карты
     @GetMapping("/{id}/balance")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getBalance(@PathVariable("id") Long id, Principal principal) {
-        return ResponseEntity.ok(Map.of("balance", cardService.getBalance(principal.getName(), id)));
+        try{
+            return ResponseEntity.ok(Map.of("balance", cardService.getBalance(principal.getName(), id)));
+
+        }catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     // --- Админ ---
@@ -71,28 +96,52 @@ public class CardController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createCard(@RequestBody CardCreateDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(cardService.createCard(dto));
+        try{
+            return ResponseEntity.status(HttpStatus.CREATED).body(cardService.createCard(dto));
+
+        }catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PatchMapping("/{id}/block")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> blockCard(@PathVariable("id") Long id) {
-        cardService.blockCard(id);
-        return ResponseEntity.ok(Map.of("message", "Карта заблокирована"));
+        try{
+            cardService.blockCard(id);
+            return ResponseEntity.ok(Map.of("message", "Карта заблокирована"));
+
+        }catch (NoSuchElementException | IllegalStateException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PatchMapping("/{id}/activate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> activateCard(@PathVariable("id") Long id) {
-        cardService.activateCard(id);
-        return ResponseEntity.ok(Map.of("message", "Карта активирована"));
+        try{
+            cardService.activateCard(id);
+            return ResponseEntity.ok(Map.of("message", "Карта активирована"));
+
+        }catch (NoSuchElementException | IllegalStateException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteCard(@PathVariable("id") Long id) {
-        cardService.deleteCard(id);
-        return ResponseEntity.noContent().build();
+        try{
+            cardService.deleteCard(id);
+            return ResponseEntity.noContent().build();
+
+        }catch (NoSuchElementException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     @GetMapping("/all")
