@@ -11,6 +11,8 @@ import org.springframework.data.annotation.CreatedDate;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 
 @Getter
 @Setter
@@ -19,6 +21,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "cards")
+@EntityListeners(AuditingEntityListener.class)
 public class Card {
 
     @Id
@@ -41,6 +44,9 @@ public class Card {
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal balance;
+
+    @Column
+    private boolean blockRequest = false;
 
     @CreatedDate
     private LocalDateTime createdAt;
