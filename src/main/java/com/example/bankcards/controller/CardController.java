@@ -31,7 +31,7 @@ public class CardController {
     // Список своих карт с поиском и пагинацией
     @GetMapping
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> getMyCards(@RequestParam(required = false) String search,
+    public ResponseEntity<?> getMyCards(@RequestParam(name = "search", required = false) String search,
                                         Pageable pageable,
                                         Principal principal) {
         return ResponseEntity.ok(cardService.getMyCards(principal.getName(), search, pageable));
