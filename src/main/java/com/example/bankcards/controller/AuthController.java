@@ -134,7 +134,8 @@ public class AuthController {
                     .body(Map.of("error", "Refresh токен не валидный"));
         }
         refreshTokenService.deleteRefreshToken(tokenRefreshDTO.getRefreshToken());
-        return ResponseEntity.ok("Logged out");
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Map.of("message", "Logged out"));
     }
 
 }
