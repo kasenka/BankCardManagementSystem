@@ -57,8 +57,11 @@ public class CardController {
             cardService.transaction(principal.getName(), dto);
             return ResponseEntity.ok(Map.of("message", "Перевод выполнен"));
 
-        }catch (NoSuchElementException | IllegalStateException e){
+        }catch (NoSuchElementException e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }catch (IllegalStateException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", e.getMessage()));
         }
 
@@ -72,8 +75,11 @@ public class CardController {
             cardService.requestBlock(principal.getName(), id);
             return ResponseEntity.ok(Map.of("message", "Запрос на блокировку отправлен"));
 
-        }catch (IllegalStateException e){
+        }catch (NoSuchElementException e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }catch (IllegalStateException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", e.getMessage()));
         }
     }
@@ -112,8 +118,11 @@ public class CardController {
             cardService.blockCard(id);
             return ResponseEntity.ok(Map.of("message", "Карта заблокирована"));
 
-        }catch (NoSuchElementException | IllegalStateException e){
+        }catch (NoSuchElementException e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }catch (IllegalStateException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", e.getMessage()));
         }
     }
@@ -125,8 +134,11 @@ public class CardController {
             cardService.activateCard(id);
             return ResponseEntity.ok(Map.of("message", "Карта активирована"));
 
-        }catch (NoSuchElementException | IllegalStateException e){
+        }catch (NoSuchElementException e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }catch (IllegalStateException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", e.getMessage()));
         }
     }
