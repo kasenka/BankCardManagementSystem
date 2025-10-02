@@ -10,6 +10,8 @@ import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.service.JwtService;
 import com.example.bankcards.service.RefreshTokenService;
 import com.example.bankcards.util.UserMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;
@@ -29,8 +31,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 @RestController
 @RequestMapping("api/auth")
+@Tag(name = "Auth", description = "Регистрация, вход, refresh и logout")
 public class AuthController {
 
     private UserRepository userRepository;
@@ -59,6 +65,13 @@ public class AuthController {
     }
 
     @PostMapping(value = "/register")
+    @Operation(
+            description = "Регистрирует нового пользователя с ролью USER",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Пользователь успешно создан"),
+                    @ApiResponse(responseCode = "400", description = "Ошибка валидации или юзернейм занят")
+            }
+    )
     public ResponseEntity<?> register(@RequestBody @Valid UserAuthDTO userAuthDTO,
                                       BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -86,6 +99,13 @@ public class AuthController {
     }
 
     @PostMapping(value = "/login")
+    @Operation(
+            description = "Аутентификация пользователя, возвращает access и refresh JWT токены",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Успешный вход"),
+                    @ApiResponse(responseCode = "401", description = "Неверный логин или пароль")
+            }
+    )
     public ResponseEntity<?> login(@RequestBody UserAuthDTO userAuthDTO){
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -115,6 +135,13 @@ public class AuthController {
     }
 
     @PostMapping(value = "/refresh")
+    @Operation(
+            description = "Обновление access токена, принимает refreshToken и возвращает новый accessToken",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Токен обновлен"),
+                    @ApiResponse(responseCode = "404", description = "Невалидный refreshToken")
+            }
+    )
     public ResponseEntity<?> refresh(@RequestBody TokenRefreshDTO tokenRefreshDTO){
         if (refreshTokenService.isValid(tokenRefreshDTO.getRefreshToken())){
             String username = refreshTokenService.getUsernameByToken(tokenRefreshDTO.getRefreshToken());
@@ -128,6 +155,13 @@ public class AuthController {
     }
 
     @DeleteMapping("/logout")
+    @Operation(
+            description = "Выход пользователя, удаляет refresh токен из БД, делая его недействительным",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Успешный выход"),
+                    @ApiResponse(responseCode = "400", description = "Токен невалидный")
+            }
+    )
     public ResponseEntity<?> logout(@RequestBody TokenRefreshDTO tokenRefreshDTO) {
         if (refreshTokenRepository.findByToken(tokenRefreshDTO.getRefreshToken()).isEmpty()){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
