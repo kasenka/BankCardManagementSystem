@@ -37,9 +37,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
 @DisplayName("Комплексные тесты для CardController")
-class CardControllerMockMvcTest {
+class CardControllerTest {
 
     @Resource
     private MockMvc mockMvc;

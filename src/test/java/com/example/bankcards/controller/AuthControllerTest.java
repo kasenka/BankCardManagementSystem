@@ -38,12 +38,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-//@WebMvcTest()
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
 @DisplayName("Комплексные тесты для AuthController")
-class AuthControllerMockMvcTest {
+class AuthControllerTest {
 
     @Resource
     private MockMvc mockMvc;
