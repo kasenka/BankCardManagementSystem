@@ -137,12 +137,31 @@ pom.xml — файл для управления зависимостями пр
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+
         <plugins>
-            <!-- Spring Boot plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+<!--                <version>3.2.0</version> &lt;!&ndash; или ваша версия &ndash;&gt;-->
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
+
+<!--            &lt;!&ndash; Spring Boot plugin &ndash;&gt;-->
+<!--            <plugin>-->
+<!--                <groupId>org.springframework.boot</groupId>-->
+<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--            </plugin>-->
 
             <!-- Compiler -->
             <plugin>
@@ -171,6 +190,19 @@ pom.xml — файл для управления зависимостями пр
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+
+<!--            <plugin>-->
+<!--                <groupId>org.liquibase</groupId>-->
+<!--                <artifactId>liquibase-maven-plugin</artifactId>-->
+<!--                <version>4.23.2</version> &lt;!&ndash; или последняя версия &ndash;&gt;-->
+<!--                <configuration>-->
+<!--                    <changeLogFile>src/main/resources/db/changelog/db.changelog-master.yaml</changeLogFile>-->
+<!--                    <url>jdbc:postgresql://localhost:5432/bank_db</url>-->
+<!--                    <username>postgres</username>-->
+<!--                    <password>3169</password>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+
         </plugins>
     </build>
 </project>

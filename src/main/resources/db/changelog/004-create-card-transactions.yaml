@@ -1,0 +1,50 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4-create-card-transactions
+      author: me
+      changes:
+        - createTable:
+            tableName: card_transactions
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: from_card_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: to_card_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: DECIMAL(19,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: timestamp
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR(255)
+        - addForeignKeyConstraint:
+            baseTableName: card_transactions
+            baseColumnNames: from_card_id
+            constraintName: fk_tx_from_card
+            referencedTableName: cards
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            baseTableName: card_transactions
+            baseColumnNames: to_card_id
+            constraintName: fk_tx_to_card
+            referencedTableName: cards
+            referencedColumnNames: id
