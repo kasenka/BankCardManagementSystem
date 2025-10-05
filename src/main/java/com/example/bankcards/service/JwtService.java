@@ -1,7 +1,5 @@
 package com.example.bankcards.service;
 
-
-import com.example.bankcards.dto.UserAuthDTO;
 import com.example.bankcards.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

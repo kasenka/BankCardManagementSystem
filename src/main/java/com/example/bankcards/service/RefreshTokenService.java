@@ -25,12 +25,10 @@ public class RefreshTokenService {
         Optional<RefreshToken> refreshToken = refreshTokenRepository.findByToken(token);
 
         if (refreshToken.isEmpty()) {
-            System.out.println("------------------------------");
             return false;
         }
 
         if (refreshToken.get().getExpiryDate().isBefore(LocalDateTime.now())){
-            System.out.println("111111121213312312312313123123");
             refreshTokenRepository.deleteByToken(token);
             return false;
         }

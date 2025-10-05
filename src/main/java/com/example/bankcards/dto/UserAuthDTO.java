@@ -1,7 +1,6 @@
 package com.example.bankcards.dto;
 
-import jakarta.persistence.Column;
-import jakarta.validation.constraints.Email;
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

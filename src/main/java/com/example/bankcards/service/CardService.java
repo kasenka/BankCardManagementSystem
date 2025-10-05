@@ -39,7 +39,6 @@ public class CardService {
         this.cardNumber = cardNumber;
     }
 
-    // --- Пользовательская логика ---
 
     public Page<CardDTO> getMyCards(String username, String search, Pageable pageable) {
         String searchTerm = (search == null) ? "" : search;
@@ -105,7 +104,6 @@ public class CardService {
                 .getBalance();
     }
 
-    // --- Админская логика ---
 
     public CardDTO createCard(CardCreateDTO dto) {
         User owner = userRepository.findByUsername(dto.getOwner())

@@ -2,7 +2,6 @@ package com.example.bankcards.dto;
 
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.CardStatus;
-import com.example.bankcards.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

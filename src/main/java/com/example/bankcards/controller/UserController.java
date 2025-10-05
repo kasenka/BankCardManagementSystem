@@ -57,7 +57,7 @@ public class UserController {
                 .body(Map.of("users",userService.getAllUsers(pageable)));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Информация о пользователе по ID",
@@ -67,7 +67,7 @@ public class UserController {
                     @ApiResponse(responseCode = "404", description = "Пользователь не найден")
             }
     )
-    public ResponseEntity<?> getUser(@PathVariable("id") long id) {
+    public ResponseEntity<?> getUser(@PathVariable("userId") long id) {
         try {
             UserDTO userDTO = userService.getUser(id);
             return ResponseEntity.status(HttpStatus.OK)
@@ -78,7 +78,7 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/{id}/delete")
+    @DeleteMapping("/{userId}/delete")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Удаление пользователя",
@@ -89,7 +89,7 @@ public class UserController {
                     @ApiResponse(responseCode = "409", description = "Конфликт — невозможно удалить пользователя")
             }
     )
-    public ResponseEntity<?> deleteUser(@PathVariable("id") long id){
+    public ResponseEntity<?> deleteUser(@PathVariable("userId") long id){
         try{
             if (userService.deleteUser(id)){
                 return ResponseEntity.status(HttpStatus.NO_CONTENT)

@@ -1,14 +1,11 @@
 package com.example.bankcards.controller;
 
-// --- Контроллер ---
-
 import com.example.bankcards.dto.CardCreateDTO;
 import com.example.bankcards.dto.TransactionRequestDTO;
 import com.example.bankcards.service.CardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.hibernate.query.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -46,7 +43,7 @@ public class CardController {
         return ResponseEntity.ok(cardService.getMyCards(principal.getName(), search, pageable));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{cardId}")
     @PreAuthorize("hasRole('USER')")
     @Operation(
             summary = "Информация о своей карте",
@@ -55,7 +52,7 @@ public class CardController {
                     @ApiResponse(responseCode = "404", description = "Карта не найдена")
             }
     )
-    public ResponseEntity<?> getMyCard(@PathVariable("id") Long id, Principal principal) {
+    public ResponseEntity<?> getMyCard(@PathVariable("cardId") Long id, Principal principal) {
         try {
             return ResponseEntity.ok(cardService.getMyCard(principal.getName(), id));
         }catch (NoSuchElementException e){
@@ -89,8 +86,7 @@ public class CardController {
 
     }
 
-    // Запрос на блокировку карты
-    @PostMapping("/{id}/block-request")
+    @PostMapping("/{cardId}/block-request")
     @PreAuthorize("hasRole('USER')")
     @Operation(
             summary = "Запрос на блокировку карты",
@@ -100,7 +96,7 @@ public class CardController {
                     @ApiResponse(responseCode = "404", description = "Карта не найдена")
             }
     )
-    public ResponseEntity<?> requestBlock(@PathVariable("id") Long id, Principal principal) {
+    public ResponseEntity<?> requestBlock(@PathVariable("cardId") Long id, Principal principal) {
         try {
             cardService.requestBlock(principal.getName(), id);
             return ResponseEntity.ok(Map.of("message", "Запрос на блокировку отправлен"));
@@ -114,7 +110,7 @@ public class CardController {
         }
     }
 
-    @GetMapping("/{id}/balance")
+    @GetMapping("/{cardId}/balance")
     @PreAuthorize("hasRole('USER')")
     @Operation(
             summary = "Баланс карты",
@@ -123,7 +119,7 @@ public class CardController {
                     @ApiResponse(responseCode = "404", description = "Карта не найдена")
             }
     )
-    public ResponseEntity<?> getBalance(@PathVariable("id") Long id, Principal principal) {
+    public ResponseEntity<?> getBalance(@PathVariable("cardId") Long id, Principal principal) {
         try{
             return ResponseEntity.ok(Map.of("balance", cardService.getBalance(principal.getName(), id)));
 
@@ -154,7 +150,7 @@ public class CardController {
         }
     }
 
-    @PatchMapping("/{id}/block")
+    @PatchMapping("/{cardId}/block")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Блокировка карты",
@@ -164,7 +160,7 @@ public class CardController {
                     @ApiResponse(responseCode = "404", description = "Карта не найдена")
             }
     )
-    public ResponseEntity<?> blockCard(@PathVariable("id") Long id) {
+    public ResponseEntity<?> blockCard(@PathVariable("cardId") Long id) {
         try{
             cardService.blockCard(id);
             return ResponseEntity.ok(Map.of("message", "Карта заблокирована"));
@@ -178,7 +174,7 @@ public class CardController {
         }
     }
 
-    @PatchMapping("/{id}/activate")
+    @PatchMapping("/{cardId}/activate")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Активация карты",
@@ -188,7 +184,7 @@ public class CardController {
                     @ApiResponse(responseCode = "404", description = "Карта не найдена")
             }
     )
-    public ResponseEntity<?> activateCard(@PathVariable("id") Long id) {
+    public ResponseEntity<?> activateCard(@PathVariable("cardId") Long id) {
         try{
             cardService.activateCard(id);
             return ResponseEntity.ok(Map.of("message", "Карта активирована"));
@@ -202,7 +198,7 @@ public class CardController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{cardId}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Удаление карты",
@@ -211,7 +207,7 @@ public class CardController {
                     @ApiResponse(responseCode = "404", description = "Карта не найдена")
             }
     )
-    public ResponseEntity<?> deleteCard(@PathVariable("id") Long id) {
+    public ResponseEntity<?> deleteCard(@PathVariable("cardId") Long id) {
         try{
             cardService.deleteCard(id);
             return ResponseEntity.noContent().build();

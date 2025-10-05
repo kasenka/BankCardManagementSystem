@@ -2,7 +2,6 @@ package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.TokenRefreshDTO;
 import com.example.bankcards.dto.UserAuthDTO;
-import com.example.bankcards.dto.UserDTO;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.repository.RefreshTokenRepository;
@@ -12,9 +11,7 @@ import com.example.bankcards.service.RefreshTokenService;
 import com.example.bankcards.util.UserMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
