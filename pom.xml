@@ -48,6 +48,7 @@ pom.xml — файл для управления зависимостями пр
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -83,6 +84,8 @@ pom.xml — файл для управления зависимостями пр
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
         </dependency>
+
+
 
         <!-- JWT -->
         <dependency>

@@ -2,6 +2,11 @@ databaseChangeLog:
   - changeSet:
       id: 4-create-card-transactions
       author: me
+      preConditions:
+        - not:
+            tableExists:
+              tableName: card_transactions
+          onFail: MARK_RAN
       changes:
         - createTable:
             tableName: card_transactions

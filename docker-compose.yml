@@ -23,6 +23,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+
   app:
     build: .
     container_name: bank_app
