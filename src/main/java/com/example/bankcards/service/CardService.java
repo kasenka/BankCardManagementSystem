@@ -15,6 +15,8 @@ import com.example.bankcards.util.CardNumber;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -53,6 +55,7 @@ public class CardService {
         return new CardDTO(card, cardNumber.getMasked(card.getEncryptedNumber()));
     }
 
+    @Transactional
     public void transaction(String username, TransactionRequestDTO dto) {
         Card from = cardRepository.findByIdAndOwnerUsername(dto.getFromCardId(), username)
                 .orElseThrow(() -> new IllegalStateException("Карта списания не найдена"));
@@ -88,6 +91,7 @@ public class CardService {
         transactionRepository.save(transaction);
     }
 
+    @Transactional
     public void requestBlock(String username, Long cardId) {
         Card card = cardRepository.findByIdAndOwnerUsername(cardId, username)
                 .orElseThrow(() -> new NoSuchElementException("Карта не найдена"));
@@ -104,7 +108,7 @@ public class CardService {
                 .getBalance();
     }
 
-
+    @Transactional
     public CardDTO createCard(CardCreateDTO dto) {
         User owner = userRepository.findByUsername(dto.getOwner())
                 .orElseThrow(() -> new NoSuchElementException("Пользователь не найден"));
@@ -121,6 +125,7 @@ public class CardService {
         return new CardDTO(card, cardNumber.getMasked(card.getEncryptedNumber()));
     }
 
+    @Transactional
     public void blockCard(Long id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Карта не найдена"));
@@ -132,6 +137,7 @@ public class CardService {
         cardRepository.save(card);
     }
 
+    @Transactional
     public void activateCard(Long id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Карта не найдена"));
@@ -143,6 +149,7 @@ public class CardService {
         cardRepository.save(card);
     }
 
+    @Transactional
     public void deleteCard(Long id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Карта не найдена"));

@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.NoSuchElementException;
 
@@ -40,6 +42,7 @@ public class UserService {
         return userMapper.map(user);
     }
 
+    @Transactional
     public boolean deleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Пользователь не найден"));
