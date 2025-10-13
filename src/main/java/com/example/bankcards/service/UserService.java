@@ -3,6 +3,8 @@ package com.example.bankcards.service;
 import com.example.bankcards.dto.UserDTO;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
+import com.example.bankcards.exception.ConflictErrorException;
+import com.example.bankcards.exception.UserNotFoundException;
 import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.util.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +29,7 @@ public class UserService {
 
     public UserDTO getMe(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new NoSuchElementException("Пользователь не найден"));
+                .orElseThrow(() -> new UserNotFoundException(username));
         return userMapper.map(user);
     }
 
@@ -38,16 +40,16 @@ public class UserService {
 
     public UserDTO getUser(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Пользователь не найден"));
+                .orElseThrow(() -> new UserNotFoundException(""));
         return userMapper.map(user);
     }
 
     @Transactional
     public boolean deleteUser(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Пользователь не найден"));
+                .orElseThrow(() -> new UserNotFoundException(""));
         if (user.getRole() == Role.ADMIN) {
-            throw new IllegalStateException("Админ не может управлять другими админами");
+            throw new ConflictErrorException("Админ не может управлять другими админами");
         }
         userRepository.delete(user);
         return true;

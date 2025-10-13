@@ -1,6 +1,8 @@
 package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.UserDTO;
+import com.example.bankcards.entity.ApiError;
+import com.example.bankcards.exception.ConflictErrorException;
 import com.example.bankcards.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -34,13 +36,8 @@ public class UserController {
             }
     )
     public ResponseEntity<?> getMe(Principal principal) {
-        try{
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(Map.of("me",userService.getMe(principal.getName())));
-        }catch (NoSuchElementException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        }
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Map.of("me",userService.getMe(principal.getName())));
     }
 
     @GetMapping("")
@@ -68,14 +65,9 @@ public class UserController {
             }
     )
     public ResponseEntity<?> getUser(@PathVariable("userId") long id) {
-        try {
-            UserDTO userDTO = userService.getUser(id);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(userDTO);
-        }catch (NoSuchElementException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        }
+        UserDTO userDTO = userService.getUser(id);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(userDTO);
     }
 
     @DeleteMapping("/{userId}/delete")
@@ -90,16 +82,9 @@ public class UserController {
             }
     )
     public ResponseEntity<?> deleteUser(@PathVariable("userId") long id){
-        try{
-            if (userService.deleteUser(id)){
-                return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                        .body(Map.of("message","Этот пользователь удален"));
-            }return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("error","Не удалось удалить пользователя"));
-
-        }catch (NoSuchElementException | IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        }
+        if (userService.deleteUser(id)){
+            return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                    .body(Map.of("message","Этот пользователь удален"));
+        }throw new ConflictErrorException("Не удалось удалить пользователя");
     }
 }

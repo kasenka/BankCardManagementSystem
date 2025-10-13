@@ -4,6 +4,9 @@ import com.example.bankcards.dto.TokenRefreshDTO;
 import com.example.bankcards.dto.UserAuthDTO;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
+import com.example.bankcards.exception.InvalidCredentialsException;
+import com.example.bankcards.exception.InvalidRefreshTokenException;
+import com.example.bankcards.exception.UsernameNotUniqueException;
 import com.example.bankcards.repository.RefreshTokenRepository;
 import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.service.JwtService;
@@ -80,8 +83,7 @@ public class AuthController {
         }
 
         if(userRepository.findByUsername(userAuthDTO.getUsername()).isPresent()){
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Этот юзернейм уже занят"));
+            throw new UsernameNotUniqueException(userAuthDTO.getUsername());
         }
 
         User user = userMapper.map(userAuthDTO);
@@ -126,8 +128,7 @@ public class AuthController {
                     .body(Map.of("jwtAccess", jwtAccess,
                             "jwtRefresh", jwtRefresh));
         } catch (BadCredentialsException ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Неверный юзернейм или пароль"));
+            throw new InvalidCredentialsException();
         }
     }
 
@@ -147,8 +148,7 @@ public class AuthController {
             String accessToken = jwtService.generateAccessToken(user);
             return ResponseEntity.ok()
                     .body(Map.of("jwtAccess", accessToken));
-        }return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", "Невалидный refreshToken"));
+        } throw new InvalidRefreshTokenException();
     }
 
     @DeleteMapping("/logout")
@@ -161,8 +161,7 @@ public class AuthController {
     )
     public ResponseEntity<?> logout(@RequestBody TokenRefreshDTO tokenRefreshDTO) {
         if (refreshTokenRepository.findByToken(tokenRefreshDTO.getRefreshToken()).isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Refresh токен не валидный"));
+            throw new InvalidRefreshTokenException();
         }
         refreshTokenService.deleteRefreshToken(tokenRefreshDTO.getRefreshToken());
         return ResponseEntity.status(HttpStatus.OK)

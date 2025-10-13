@@ -8,6 +8,10 @@ import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.entity.CardTransaction;
 import com.example.bankcards.entity.User;
+import com.example.bankcards.exception.CardNotFoundException;
+import com.example.bankcards.exception.ConflictErrorException;
+import com.example.bankcards.exception.NotEnoughMoneyException;
+import com.example.bankcards.exception.UserNotFoundException;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.CardTransactionRepository;
 import com.example.bankcards.repository.UserRepository;
@@ -51,28 +55,28 @@ public class CardService {
 
     public CardDTO getMyCard(String username, Long cardId) {
         Card card = cardRepository.findByIdAndOwnerUsername(cardId, username)
-                .orElseThrow(() -> new NoSuchElementException("Карта не найдена"));
+                .orElseThrow(() -> new CardNotFoundException(""));
         return new CardDTO(card, cardNumber.getMasked(card.getEncryptedNumber()));
     }
 
     @Transactional
     public void transaction(String username, TransactionRequestDTO dto) {
         Card from = cardRepository.findByIdAndOwnerUsername(dto.getFromCardId(), username)
-                .orElseThrow(() -> new IllegalStateException("Карта списания не найдена"));
+                .orElseThrow(() -> new CardNotFoundException("Карта списания не найдена"));
 
         if (from.getStatus() != CardStatus.ACTIVE){
-            throw new IllegalStateException("Карта списания недоступна");
+            throw new ConflictErrorException("Карта списания недоступна");
         }
 
         Card to = cardRepository.findByIdAndOwnerUsername(dto.getToCardId(), username)
-                .orElseThrow(() -> new NoSuchElementException("Карта назначения не найдена"));
+                .orElseThrow(() -> new CardNotFoundException("Карта назначения не найдена"));
 
         if (to.getStatus() != CardStatus.ACTIVE){
-            throw new IllegalStateException("Карта назначения недоступна");
+            throw new ConflictErrorException("Карта назначения недоступна");
         }
 
         if (from.getBalance().compareTo(dto.getAmount()) < 0) {
-            throw new IllegalStateException("Недостаточно средств");
+            throw new NotEnoughMoneyException();
         }
 
         from.setBalance(from.getBalance().subtract(dto.getAmount()));
@@ -94,9 +98,9 @@ public class CardService {
     @Transactional
     public void requestBlock(String username, Long cardId) {
         Card card = cardRepository.findByIdAndOwnerUsername(cardId, username)
-                .orElseThrow(() -> new NoSuchElementException("Карта не найдена"));
+                .orElseThrow(() -> new CardNotFoundException(""));
         if (card.getStatus() == CardStatus.BLOCKED){
-            throw new IllegalStateException("Карта уже заблокирована");
+            throw new ConflictErrorException("Карта уже заблокирована");
         }
         card.setBlockRequest(true);
         cardRepository.save(card);
@@ -104,14 +108,14 @@ public class CardService {
 
     public BigDecimal getBalance(String username, Long cardId) {
         return cardRepository.findByIdAndOwnerUsername(cardId, username)
-                .orElseThrow(() -> new NoSuchElementException("Карта не найдена"))
+                .orElseThrow(() -> new CardNotFoundException(""))
                 .getBalance();
     }
 
     @Transactional
     public CardDTO createCard(CardCreateDTO dto) {
         User owner = userRepository.findByUsername(dto.getOwner())
-                .orElseThrow(() -> new NoSuchElementException("Пользователь не найден"));
+                .orElseThrow(() -> new UserNotFoundException(dto.getOwner()));
 
         Card card = new Card();
         card.setEncryptedNumber(cardNumber.encrypt(cardNumber.generateRandomNumber()));
@@ -128,10 +132,10 @@ public class CardService {
     @Transactional
     public void blockCard(Long id) {
         Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Карта не найдена"));
+                .orElseThrow(() -> new CardNotFoundException(""));
 
         if (!card.isBlockRequest()){
-            throw new IllegalStateException("Пользователь не оставлял заявку на блокировку");
+            throw new ConflictErrorException("Пользователь не оставлял заявку на блокировку");
         }
         card.setStatus(CardStatus.BLOCKED);
         cardRepository.save(card);
@@ -140,10 +144,10 @@ public class CardService {
     @Transactional
     public void activateCard(Long id) {
         Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Карта не найдена"));
+                .orElseThrow(() -> new CardNotFoundException(""));
 
         if (card.getStatus() != CardStatus.BLOCKED){
-            throw new IllegalStateException("Эту карту нельзя активировать");
+            throw new ConflictErrorException("Эту карту нельзя активировать");
         }
         card.setStatus(CardStatus.ACTIVE);
         cardRepository.save(card);
@@ -152,12 +156,13 @@ public class CardService {
     @Transactional
     public void deleteCard(Long id) {
         Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Карта не найдена"));
+                .orElseThrow(() -> new CardNotFoundException(""));
 
         cardRepository.deleteById(id);
     }
 
     public Page<CardDTO> getAllCards(Pageable pageable) {
-        return cardRepository.findAll(pageable).map(c -> new CardDTO(c, cardNumber.getMasked(c.getEncryptedNumber())));
+        return cardRepository.findAll(pageable)
+                .map(c -> new CardDTO(c, cardNumber.getMasked(c.getEncryptedNumber())));
     }
 }

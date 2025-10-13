@@ -53,12 +53,7 @@ public class CardController {
             }
     )
     public ResponseEntity<?> getMyCard(@PathVariable("cardId") Long id, Principal principal) {
-        try {
-            return ResponseEntity.ok(cardService.getMyCard(principal.getName(), id));
-        }catch (NoSuchElementException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        }
+        return ResponseEntity.ok(cardService.getMyCard(principal.getName(), id));
     }
 
     @PostMapping("/transaction")
@@ -72,18 +67,8 @@ public class CardController {
             }
     )
     public ResponseEntity<?> transfer(@RequestBody TransactionRequestDTO dto, Principal principal) {
-        try{
-            cardService.transaction(principal.getName(), dto);
-            return ResponseEntity.ok(Map.of("message", "Перевод выполнен"));
-
-        }catch (NoSuchElementException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        }catch (IllegalStateException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
-        }
-
+        cardService.transaction(principal.getName(), dto);
+        return ResponseEntity.ok(Map.of("message", "Перевод выполнен"));
     }
 
     @PostMapping("/{cardId}/block-request")
@@ -97,17 +82,8 @@ public class CardController {
             }
     )
     public ResponseEntity<?> requestBlock(@PathVariable("cardId") Long id, Principal principal) {
-        try {
-            cardService.requestBlock(principal.getName(), id);
-            return ResponseEntity.ok(Map.of("message", "Запрос на блокировку отправлен"));
-
-        }catch (NoSuchElementException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        }catch (IllegalStateException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
-        }
+        cardService.requestBlock(principal.getName(), id);
+        return ResponseEntity.ok(Map.of("message", "Запрос на блокировку отправлен"));
     }
 
     @GetMapping("/{cardId}/balance")
@@ -120,13 +96,7 @@ public class CardController {
             }
     )
     public ResponseEntity<?> getBalance(@PathVariable("cardId") Long id, Principal principal) {
-        try{
-            return ResponseEntity.ok(Map.of("balance", cardService.getBalance(principal.getName(), id)));
-
-        }catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        }
+        return ResponseEntity.ok(Map.of("balance", cardService.getBalance(principal.getName(), id)));
     }
 
 
@@ -141,13 +111,7 @@ public class CardController {
             }
     )
     public ResponseEntity<?> createCard(@RequestBody CardCreateDTO dto) {
-        try{
-            return ResponseEntity.status(HttpStatus.CREATED).body(cardService.createCard(dto));
-
-        }catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(cardService.createCard(dto));
     }
 
     @PatchMapping("/{cardId}/block")
@@ -161,17 +125,8 @@ public class CardController {
             }
     )
     public ResponseEntity<?> blockCard(@PathVariable("cardId") Long id) {
-        try{
-            cardService.blockCard(id);
-            return ResponseEntity.ok(Map.of("message", "Карта заблокирована"));
-
-        }catch (NoSuchElementException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        }catch (IllegalStateException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
-        }
+        cardService.blockCard(id);
+        return ResponseEntity.ok(Map.of("message", "Карта заблокирована"));
     }
 
     @PatchMapping("/{cardId}/activate")
@@ -185,17 +140,8 @@ public class CardController {
             }
     )
     public ResponseEntity<?> activateCard(@PathVariable("cardId") Long id) {
-        try{
-            cardService.activateCard(id);
-            return ResponseEntity.ok(Map.of("message", "Карта активирована"));
-
-        }catch (NoSuchElementException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        }catch (IllegalStateException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
-        }
+        cardService.activateCard(id);
+        return ResponseEntity.ok(Map.of("message", "Карта активирована"));
     }
 
     @DeleteMapping("/{cardId}")
@@ -208,14 +154,8 @@ public class CardController {
             }
     )
     public ResponseEntity<?> deleteCard(@PathVariable("cardId") Long id) {
-        try{
-            cardService.deleteCard(id);
-            return ResponseEntity.noContent().build();
-
-        }catch (NoSuchElementException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        }
+        cardService.deleteCard(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/all")
