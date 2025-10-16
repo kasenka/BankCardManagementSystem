@@ -109,8 +109,10 @@ class AuthControllerTest {
                             .content(json))
                     .andExpectAll(
                             status().isBadRequest(),
-                            jsonPath("$.error")
-                                    .value("Этот юзернейм уже занят")
+                            jsonPath("$.status")
+                                    .value("BAD_REQUEST"),
+                            jsonPath("$.message")
+                                    .value("Пользователь с именем 'existingUser' уже существует")
                     )
                     .andDo(print())
                     .andReturn();
@@ -190,7 +192,9 @@ class AuthControllerTest {
                             .content(json))
                     .andExpectAll(
                             status().isUnauthorized(),
-                            jsonPath("$.error")
+                            jsonPath("$.status")
+                                    .value("UNAUTHORIZED"),
+                            jsonPath("$.message")
                                     .value("Неверный юзернейм или пароль")
                     )
                     .andDo(print())
@@ -231,7 +235,7 @@ class AuthControllerTest {
         }
 
         @Test
-        void refresh_Invalid_ShouldReturn404() throws Exception {
+        void refresh_Invalid_ShouldReturn401() throws Exception {
             String json = """
             {"refreshToken":"badToken"}
             """;
@@ -242,9 +246,11 @@ class AuthControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(json))
                     .andExpectAll(
-                            status().isNotFound(),
-                            jsonPath("$.error")
-                                    .value("Невалидный refreshToken")
+                            status().isUnauthorized(),
+                            jsonPath("$.status")
+                                    .value("UNAUTHORIZED"),
+                            jsonPath("$.message")
+                                    .value("Невалидный refresh токен")
                     )
                     .andDo(print())
                     .andReturn();
@@ -272,7 +278,7 @@ class AuthControllerTest {
         }
 
         @Test
-        void logout_Invalid_ShouldReturn400() throws Exception {
+        void logout_Invalid_ShouldReturn401() throws Exception {
             String json = """
             {"refreshToken":"badToken"}
             """;
@@ -284,9 +290,11 @@ class AuthControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(json))
                     .andExpectAll(
-                            status().isBadRequest(),
-                            jsonPath("$.error")
-                                    .value("Refresh токен не валидный")
+                            status().isUnauthorized(),
+                            jsonPath("$.status")
+                                    .value("UNAUTHORIZED"),
+                            jsonPath("$.message")
+                                    .value("Невалидный refresh токен")
                     )
                     .andDo(print())
                     .andReturn();

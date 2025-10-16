@@ -2,6 +2,7 @@ package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.UserDTO;
 import com.example.bankcards.entity.Role;
+import com.example.bankcards.exception.UserNotFoundException;
 import com.example.bankcards.service.UserService;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.DisplayName;
@@ -64,12 +65,13 @@ class UserControllerTest {
         @WithMockUser(username = "unknown", roles = "USER")
         void getMe_NotFound_ShouldReturn404() throws Exception {
             when(userService.getMe("unknown"))
-                    .thenThrow(new NoSuchElementException("Пользователь не найден"));
+                    .thenThrow(new UserNotFoundException("unknown"));
 
             mockMvc.perform(get("/api/users/me"))
                     .andExpectAll(
                             status().isNotFound(),
-                            jsonPath("$.error").value("Пользователь не найден")
+                            jsonPath("$.status").value("NOT_FOUND"),
+                            jsonPath("$.message").value("Пользователь unknown не найден")
                     )
                     .andDo(print());
         }
@@ -130,12 +132,13 @@ class UserControllerTest {
         @WithMockUser(roles = "ADMIN")
         void getUser_NotFound_ShouldReturn404() throws Exception {
             when(userService.getUser(99L))
-                    .thenThrow(new NoSuchElementException("Пользователь не найден"));
+                    .thenThrow(new UserNotFoundException(""));
 
             mockMvc.perform(get("/api/users/99"))
                     .andExpectAll(
                             status().isNotFound(),
-                            jsonPath("$.error").value("Пользователь не найден")
+                            jsonPath("$.status").value("NOT_FOUND"),
+                            jsonPath("$.message").value("Пользователь  не найден")
                     )
                     .andDo(print());
         }
@@ -166,7 +169,8 @@ class UserControllerTest {
             mockMvc.perform(delete("/api/users/1/delete"))
                     .andExpectAll(
                             status().isConflict(),
-                            jsonPath("$.error").value("Не удалось удалить пользователя")
+                            jsonPath("$.status").value("CONFLICT"),
+                            jsonPath("$.message").value("Не удалось удалить пользователя")
                     )
                     .andDo(print());
         }
@@ -175,12 +179,13 @@ class UserControllerTest {
         @WithMockUser(roles = "ADMIN")
         void deleteUser_NotFound_ShouldReturn404() throws Exception {
             when(userService.deleteUser(42L))
-                    .thenThrow(new NoSuchElementException("Пользователь с id 42 не найден"));
+                    .thenThrow(new UserNotFoundException(""));
 
             mockMvc.perform(delete("/api/users/42/delete"))
                     .andExpectAll(
                             status().isNotFound(),
-                            jsonPath("$.error").value("Пользователь с id 42 не найден")
+                            jsonPath("$.status").value("NOT_FOUND"),
+                            jsonPath("$.message").value("Пользователь  не найден")
                     )
                     .andDo(print());
         }

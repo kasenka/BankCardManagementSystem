@@ -7,6 +7,10 @@ import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
+import com.example.bankcards.exception.CardNotFoundException;
+import com.example.bankcards.exception.ConflictErrorException;
+import com.example.bankcards.exception.GlobalExceptionHandler;
+import com.example.bankcards.exception.NotEnoughMoneyException;
 import com.example.bankcards.service.CardService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -14,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -94,11 +99,12 @@ class CardControllerTest {
         @WithMockUser(username = "user1", roles = "USER")
         void getMyCard_NotFound() throws Exception {
             when(cardService.getMyCard("user1", 99L))
-                    .thenThrow(new NoSuchElementException("Карта не найдена"));
+                    .thenThrow(new CardNotFoundException(""));
 
             mockMvc.perform(get("/api/cards/99"))
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error").value("Карта не найдена"))
+                    .andExpect(jsonPath("$.status").value("NOT_FOUND"))
+                    .andExpect(jsonPath("$.message").value("Карта не найдена"))
                     .andDo(print());
         }
 
@@ -122,7 +128,7 @@ class CardControllerTest {
         @Test
         @WithMockUser(username = "user1", roles = "USER")
         void transfer_Fail_NotEnoughMoney() throws Exception {
-            doThrow(new IllegalStateException("Недостаточно средств"))
+            doThrow(new NotEnoughMoneyException())
                     .when(cardService).transaction(eq("user1"), any(TransactionRequestDTO.class));
 
             String json = """
@@ -133,7 +139,8 @@ class CardControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(json))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").value("Недостаточно средств"))
+                    .andExpect(jsonPath("$.status").value("BAD_REQUEST"))
+                    .andExpect(jsonPath("$.message").value("Недостаточно средств"))
                     .andDo(print());
         }
 
@@ -151,24 +158,26 @@ class CardControllerTest {
         @Test
         @WithMockUser(username = "user1", roles = "USER")
         void requestBlock_NotFound() throws Exception {
-            doThrow(new NoSuchElementException("Карта не найдена"))
+            doThrow(new CardNotFoundException("Карта не найдена"))
                     .when(cardService).requestBlock("user1", 1L);
 
             mockMvc.perform(post("/api/cards/1/block-request"))
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error").value("Карта не найдена"))
+                    .andExpect(jsonPath("$.status").value("NOT_FOUND"))
+                    .andExpect(jsonPath("$.message").value("Карта не найдена"))
                     .andDo(print());
         }
 
         @Test
         @WithMockUser(username = "user1", roles = "USER")
-        void requestBlock_BadRequest() throws Exception {
-            doThrow(new IllegalStateException("Карта уже в блокировке"))
+        void requestBlock_Conflict() throws Exception {
+            doThrow(new ConflictErrorException("Карта уже в блокировке"))
                     .when(cardService).requestBlock("user1", 1L);
 
             mockMvc.perform(post("/api/cards/1/block-request"))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").value("Карта уже в блокировке"))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.status").value("CONFLICT"))
+                    .andExpect(jsonPath("$.message").value("Карта уже в блокировке"))
                     .andDo(print());
         }
 
@@ -187,11 +196,12 @@ class CardControllerTest {
         @WithMockUser(username = "user1", roles = "USER")
         void getBalance_NotFound() throws Exception {
             when(cardService.getBalance("user1", 1L))
-                    .thenThrow(new NoSuchElementException("Карта не найдена"));
+                    .thenThrow(new CardNotFoundException("Карта не найдена"));
 
             mockMvc.perform(get("/api/cards/1/balance"))
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error").value("Карта не найдена"))
+                    .andExpect(jsonPath("$.status").value("NOT_FOUND"))
+                    .andExpect(jsonPath("$.message").value("Карта не найдена"))
                     .andDo(print());
         }
     }
@@ -224,7 +234,7 @@ class CardControllerTest {
         @WithMockUser(roles = "ADMIN")
         void createCard_NotFoundOwner() throws Exception {
             when(cardService.createCard(any(CardCreateDTO.class)))
-                    .thenThrow(new NoSuchElementException("Владелец не найден"));
+                    .thenThrow(new CardNotFoundException("Владелец не найден"));
 
             String json = """
                     {"owner":"ghost","balance":100}
@@ -234,7 +244,8 @@ class CardControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(json))
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error").value("Владелец не найден"))
+                    .andExpect(jsonPath("$.status").value("NOT_FOUND"))
+                    .andExpect(jsonPath("$.message").value("Владелец не найден"))
                     .andDo(print());
         }
 
@@ -252,24 +263,26 @@ class CardControllerTest {
         @Test
         @WithMockUser(roles = "ADMIN")
         void blockCard_NotFound() throws Exception {
-            doThrow(new NoSuchElementException("Карта не найдена"))
+            doThrow(new CardNotFoundException(""))
                     .when(cardService).blockCard(99L);
 
             mockMvc.perform(patch("/api/cards/99/block"))
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error").value("Карта не найдена"))
+                    .andExpect(jsonPath("$.status").value("NOT_FOUND"))
+                    .andExpect(jsonPath("$.message").value("Карта не найдена"))
                     .andDo(print());
         }
 
         @Test
         @WithMockUser(roles = "ADMIN")
-        void blockCard_BadRequest() throws Exception {
-            doThrow(new IllegalStateException("Уже заблокирована"))
+        void blockCard_Conflict() throws Exception {
+            doThrow(new ConflictErrorException("Уже заблокирована"))
                     .when(cardService).blockCard(1L);
 
             mockMvc.perform(patch("/api/cards/1/block"))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").value("Уже заблокирована"))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.status").value("CONFLICT"))
+                    .andExpect(jsonPath("$.message").value("Уже заблокирована"))
                     .andDo(print());
         }
 
@@ -287,24 +300,26 @@ class CardControllerTest {
         @Test
         @WithMockUser(roles = "ADMIN")
         void activateCard_NotFound() throws Exception {
-            doThrow(new NoSuchElementException("Карта не найдена"))
+            doThrow(new CardNotFoundException(""))
                     .when(cardService).activateCard(1L);
 
             mockMvc.perform(patch("/api/cards/1/activate"))
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error").value("Карта не найдена"))
+                    .andExpect(jsonPath("$.status").value("NOT_FOUND"))
+                    .andExpect(jsonPath("$.message").value("Карта не найдена"))
                     .andDo(print());
         }
 
         @Test
         @WithMockUser(roles = "ADMIN")
-        void activateCard_BadRequest() throws Exception {
-            doThrow(new IllegalStateException("Нельзя активировать"))
+        void activateCard_Conflict() throws Exception {
+            doThrow(new ConflictErrorException("Нельзя активировать"))
                     .when(cardService).activateCard(1L);
 
             mockMvc.perform(patch("/api/cards/1/activate"))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.error").value("Нельзя активировать"))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.status").value("CONFLICT"))
+                    .andExpect(jsonPath("$.message").value("Нельзя активировать"))
                     .andDo(print());
         }
 
@@ -321,12 +336,13 @@ class CardControllerTest {
         @Test
         @WithMockUser(roles = "ADMIN")
         void deleteCard_NotFound() throws Exception {
-            doThrow(new NoSuchElementException("Карта не найдена"))
+            doThrow(new CardNotFoundException(""))
                     .when(cardService).deleteCard(1L);
 
             mockMvc.perform(delete("/api/cards/1"))
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error").value("Карта не найдена"))
+                    .andExpect(jsonPath("$.status").value("NOT_FOUND"))
+                    .andExpect(jsonPath("$.message").value("Карта не найдена"))
                     .andDo(print());
         }
 
