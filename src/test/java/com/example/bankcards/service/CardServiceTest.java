@@ -7,6 +7,10 @@ import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.entity.CardTransaction;
 import com.example.bankcards.entity.User;
+import com.example.bankcards.exception.CardNotFoundException;
+import com.example.bankcards.exception.ConflictErrorException;
+import com.example.bankcards.exception.NotEnoughMoneyException;
+import com.example.bankcards.exception.UserNotFoundException;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.CardTransactionRepository;
 import com.example.bankcards.repository.UserRepository;
@@ -108,7 +112,7 @@ class CardServiceTest {
             when(cardRepository.findByIdAndOwnerUsername(1L, "user1")).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> cardService.getMyCard("user1", 1L))
-                    .isInstanceOf(NoSuchElementException.class)
+                    .isInstanceOf(CardNotFoundException.class)
                     .hasMessage("Карта не найдена");
         }
     }
@@ -152,7 +156,7 @@ class CardServiceTest {
             when(cardRepository.findByIdAndOwnerUsername(1L, "user1")).thenReturn(Optional.of(card));
 
             assertThatThrownBy(() -> cardService.transaction("user1", dto))
-                    .isInstanceOf(IllegalStateException.class)
+                    .isInstanceOf(ConflictErrorException.class)
                     .hasMessage("Карта списания недоступна");
         }
 
@@ -173,7 +177,7 @@ class CardServiceTest {
             when(cardRepository.findByIdAndOwnerUsername(2L, "user1")).thenReturn(Optional.of(to));
 
             assertThatThrownBy(() -> cardService.transaction("user1", dto))
-                    .isInstanceOf(IllegalStateException.class)
+                    .isInstanceOf(NotEnoughMoneyException.class)
                     .hasMessage("Недостаточно средств");
         }
     }
@@ -197,7 +201,7 @@ class CardServiceTest {
             when(cardRepository.findByIdAndOwnerUsername(1L, "user1")).thenReturn(Optional.of(card));
 
             assertThatThrownBy(() -> cardService.requestBlock("user1", 1L))
-                    .isInstanceOf(IllegalStateException.class)
+                    .isInstanceOf(ConflictErrorException.class)
                     .hasMessage("Карта уже заблокирована");
         }
     }
@@ -219,7 +223,7 @@ class CardServiceTest {
             when(cardRepository.findByIdAndOwnerUsername(1L, "user1")).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> cardService.getBalance("user1", 1L))
-                    .isInstanceOf(NoSuchElementException.class)
+                    .isInstanceOf(CardNotFoundException.class)
                     .hasMessage("Карта не найдена");
         }
     }
@@ -252,8 +256,8 @@ class CardServiceTest {
             when(userRepository.findByUsername("user2")).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> cardService.createCard(dto))
-                    .isInstanceOf(NoSuchElementException.class)
-                    .hasMessage("Пользователь не найден");
+                    .isInstanceOf(UserNotFoundException.class)
+                    .hasMessage("Пользователь user2 не найден");
         }
     }
 
@@ -277,7 +281,7 @@ class CardServiceTest {
             when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
 
             assertThatThrownBy(() -> cardService.blockCard(1L))
-                    .isInstanceOf(IllegalStateException.class)
+                    .isInstanceOf(ConflictErrorException.class)
                     .hasMessage("Пользователь не оставлял заявку на блокировку");
         }
     }
@@ -302,7 +306,7 @@ class CardServiceTest {
             when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
 
             assertThatThrownBy(() -> cardService.activateCard(1L))
-                    .isInstanceOf(IllegalStateException.class)
+                    .isInstanceOf(ConflictErrorException.class)
                     .hasMessage("Эту карту нельзя активировать");
         }
     }
@@ -325,13 +329,13 @@ class CardServiceTest {
             when(cardRepository.findById(1L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> cardService.deleteCard(1L))
-                    .isInstanceOf(NoSuchElementException.class)
+                    .isInstanceOf(CardNotFoundException.class)
                     .hasMessage("Карта не найдена");
         }
     }
 
     @Nested
-    @DisplayName("Тесты метода  getAllCards()")
+    @DisplayName("Тесты метода getAllCards()")
     class GetAllCardsTests {
 
         @Test

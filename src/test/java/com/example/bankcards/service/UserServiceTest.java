@@ -3,6 +3,8 @@ package com.example.bankcards.service;
 import com.example.bankcards.dto.UserDTO;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
+import com.example.bankcards.exception.ConflictErrorException;
+import com.example.bankcards.exception.UserNotFoundException;
 import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.service.UserService;
 import com.example.bankcards.util.UserMapper;
@@ -73,8 +75,8 @@ class UserServiceTest {
             when(userRepository.findByUsername("user2")).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> userService.getMe("user2"))
-                    .isInstanceOf(NoSuchElementException.class)
-                    .hasMessage("Пользователь не найден");
+                    .isInstanceOf(UserNotFoundException.class)
+                    .hasMessage("Пользователь user2 не найден");
 
             verify(userRepository).findByUsername("user2");
         }
@@ -118,7 +120,7 @@ class UserServiceTest {
             when(userRepository.findById(2L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> userService.getUser(2L))
-                    .isInstanceOf(NoSuchElementException.class)
+                    .isInstanceOf(UserNotFoundException.class)
                     .hasMessage("Пользователь не найден");
 
             verify(userRepository).findById(2L);
@@ -144,7 +146,7 @@ class UserServiceTest {
             when(userRepository.findById(2L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> userService.deleteUser(2L))
-                    .isInstanceOf(NoSuchElementException.class)
+                    .isInstanceOf(UserNotFoundException.class)
                     .hasMessage("Пользователь не найден");
         }
 
@@ -154,7 +156,7 @@ class UserServiceTest {
             when(userRepository.findById(2L)).thenReturn(Optional.of(admin));
 
             assertThatThrownBy(() -> userService.deleteUser(2L))
-                    .isInstanceOf(IllegalStateException.class)
+                    .isInstanceOf(ConflictErrorException.class)
                     .hasMessage("Админ не может управлять другими админами");
 
             verify(userRepository, never()).delete(any());

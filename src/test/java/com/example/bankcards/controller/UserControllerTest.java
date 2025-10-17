@@ -138,7 +138,7 @@ class UserControllerTest {
                     .andExpectAll(
                             status().isNotFound(),
                             jsonPath("$.status").value("NOT_FOUND"),
-                            jsonPath("$.message").value("Пользователь  не найден")
+                            jsonPath("$.message").value("Пользователь не найден")
                     )
                     .andDo(print());
         }
@@ -185,7 +185,7 @@ class UserControllerTest {
                     .andExpectAll(
                             status().isNotFound(),
                             jsonPath("$.status").value("NOT_FOUND"),
-                            jsonPath("$.message").value("Пользователь  не найден")
+                            jsonPath("$.message").value("Пользователь не найден")
                     )
                     .andDo(print());
         }
